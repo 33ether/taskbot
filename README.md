@@ -70,3 +70,6 @@ Taskbot supports commands for managing individual tasks, global tasks, user leve
   List all peers and their registered information.  
   Example: `!peers`
 
+
+### How it Works
+It creates files for each task under each separate directory for each nick. The file_manager.py module that i wrote help with this.

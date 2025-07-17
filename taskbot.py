@@ -15,7 +15,7 @@ info_dir = 'registers' ##nick info are stored here inside respective nick named 
 
 server = "127.0.0.1"
 port = 6667
-channels = ["#hackers"]
+channels = ["#hfff"]
 nick = "bot"
 ircc = irc.IRC()
 
@@ -139,7 +139,7 @@ def match(nick,args):  ## Match peers based on level and role number supplied as
             role = None
         #print(level,role)
         
-        if level or role:
+        if level!=None or role!=None:
             info_folder_list = fm.list_files(info_dir)
             for nick_folder in info_folder_list:
                 nick_folder_files = fm.list_files(info_dir,nick_folder)
@@ -149,13 +149,13 @@ def match(nick,args):  ## Match peers based on level and role number supplied as
                        regex2_match = re.match(regex2,content)
                        read_level = regex2_match.group(1)
                        read_role = regex2_match.group(2)
-                       if level and role:
+                       if level!=None and role!=None:
                            if levels[level] == read_level and roles[role] == read_role:
                                nick_set.add(nick_folder)
-                       elif level:
+                       elif level!=None:
                            if levels[level] == read_level:
                                nick_set.add(nick_folder)
-                       elif role:
+                       elif role!=None:
                            if roles[role] == read_role:
                                nick_set.add(nick_folder)
 
