@@ -1,30 +1,72 @@
-# Taskbot to manage tasks for #hackers in darkirc
+# Taskbot for #hackers in darkirc
 
-Change server address and port in taskbot.py if not using defaults
+Taskbot is a bot designed to manage tasks and facilitate collaboration among users in the #hackers channel on darkirc. This README provides instructions for configuring and using the bot.
 
-# Usage:
+## Configuration
 
-## For managing individual tasks:
+To use Taskbot, ensure the server address and port in `taskbot.py` are correctly set. Modify these values if you are not using the default settings
 
-!add <some_task>                                            to add some task for yourself
-!tasks <optional nick>                                      to list tasks of nick or your tasks if nick not supplied
-!del <number>                                               to delete a task by number
+## Usage
 
-## For managing tasks that are for everybody/globally:
+Taskbot supports commands for managing individual tasks, global tasks, user levels, roles, and peer matching. All commands are prefixed with `!`.
 
-!add_all <some_task>                                        to add some task
-!tasks_all                                                  to list the tasks 
-!del_all <number>                                           to delete some task by number
+### Managing Individual Tasks
 
-## Levels and Roles
+- `!add <some_task>`  
+  Add a task for yourself.  
+  Example: `!add Submit a pr after finishing`
 
-!levels                                                     list available levels ["novice", "basics", "skilled", "master"]
-!roles                                                      list available roles  ["student", "collaborator", "teacher"]
-!register   <level_number> <role_number> <optional info>    register info about yourself
-!info   <optional nick>                                     to list registered info about nick or yourself if nick not supplied
-!del_info   <number>                                        delete registered info of your nick by number
+- `!tasks <optional nick>`  
+  List tasks for a specified nick. If no nick is provided, lists your own tasks.  
+  Example: `!tasks` or `!tasks anon`
 
-## Matching peers by common info data
+- `!del <number>`  
+  Delete a task by its number.  
+  Example: `!del 1`
 
-!match -l <optional num> -r <optional num>                  Match peers by -l level number and -r role number
-!peers                                                      List all peers and registered peers
+### Managing Global Tasks
+
+- `!add_all <some_task>`  
+  Add a task for everyone.  
+  Example: `!add_all make an anon dapp`
+
+- `!tasks_all`  
+  List all global tasks.  
+  Example: `!tasks_all`
+
+- `!del_all <number>`  
+  Delete a global task by its number.  
+  Example: `!del_all 2`
+
+### Levels and Roles
+
+- `!levels`  
+  List available levels: `["novice", "basics", "skilled", "master"]`.  
+  Example: `!levels`
+
+- `!roles`  
+  List available roles: `["student", "collaborator", "teacher"]`.  
+  Example: `!roles`
+
+- `!register <level_number> <role_number> <optional info>`  
+  Register information about yourself, including level number, role number, and optional additional info.  
+  Example: `!register 2 1 Rust ninjs`
+
+- `!info <optional nick>`  
+  Display registered information for a specified nick. If no nick is provided, shows your own info.  
+  Example: `!info` or `!info anon`
+
+- `!del_info <number>`  
+  Delete registered information for your nick by number.  
+  Example: `!del_info 1`
+
+### Matching Peers by Common Info
+
+- `!match -l <optional num> -r <optional num>`  
+  Match peers based on level number (`-l`) and/or role number (`-r`).  
+  Example: `!match -l 2 -r 1` (matches users with level "basics" and role "collaborator")
+
+- `!peers`  
+  List all peers and their registered information.  
+  Example: `!peers`
+
