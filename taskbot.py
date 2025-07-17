@@ -34,18 +34,7 @@ signal.signal(signal.SIGINT, signal_handler)
 
 
 def help_msg(channel):
-    ircc.send(channel,"Commands:")
-    ircc.send(channel,"(!tasks <optional nick>)      List the available tasks of a nick or if not supplied ur own")
-    ircc.send(channel,"(!add <task>)    Add a <task>")
-    ircc.send(channel,"(!del <number>)    Delete a task by number")
-    ircc.send(channel,"(!levels)    Show levels")
-    ircc.send(channel,"(!roles)  Show roles")
-    ircc.send(channel,"(!peers) Show registered peers")
-    ircc.send(channel,"(!register <level number> <role number> <optional introduction_and_topic>  Register a level and a role with topic or none")
-    ircc.send(channel,"(!info <optional nick>   Show info on nick which if none about your nick")
-    ircc.send(channel,"(!del_info <number>  Delete a registered info by number of ur nick")
-    ircc.send(channel,"(!add_all, !tasks_all, !del_all <number>) Add, list, del by number Global tasks for all")
-    ircc.send(channel,"(!match -l <optional_num> -r <optional_num>) Match peers by -l level_number and -r role_number")
+    ircc.send(channel,"https://raw.githubusercontent.com/33ether/taskbot/refs/heads/main/README.md")
 
 def add_task(args,nick):  ##Add individual task
     fm.add_file(args,tasks_dir,nick)
