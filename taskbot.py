@@ -15,7 +15,7 @@ info_dir = 'registers' ##nick info are stored here inside respective nick named 
 
 server = "127.0.0.1"
 port = 6667
-channels = ["#hfff"]
+channels = ["#hackers"]
 nick = "bot"
 ircc = irc.IRC()
 
