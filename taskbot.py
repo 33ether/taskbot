@@ -1,242 +1,186 @@
-import irc
-import signal
-import os
-import threading
 import re
 import time
 from datetime import datetime, timezone
+
 import file_manager
 
-fm = file_manager.FileManager('storage') ##the parent dir inside which all data is stored
-tasks_dir = 'tasks'  ##individual tasks are stored inside this dir in respective nick named dirs
-tasks_global_dir = 'tasks_all' ##global tasks are stored inside this dir
-info_dir = 'registers' ##nick info are stored here inside respective nick named dirs
-     
+class TaskBot:
+    def __init__(self,irc,parent_dir,tasks_dir,tasks_global_dir,info_dir,levels,roles):
+        """ Initialize with parent, tasks, globals tasks, info directories and levels, roles """
+        self.irc = irc
+        self.parent_dir = parent_dir
+        self.tasks_dir = tasks_dir
+        self.tasks_global_dir = tasks_global_dir
+        self.info_dir = info_dir
+        self.levels = levels
+        self.roles = roles
 
-server = "127.0.0.1"
-port = 6667
-channels = ["#hackers333"]
-nick = "bot"
-ircc = irc.IRC()
+        self.fm = file_manager.FileManager(parent_dir)
 
-levels = ["novice", "basics", "skilled", "master"]
-roles = ["student", "collaborator", "teacher"]
+    def help_msg(self,channel):
+        """ help message for usage """
+        self.irc.send(channel,"https://raw.githubusercontent.com/33ether/taskbot/refs/heads/main/README.md")
 
-ircc.connect(server,port,channels,nick)
+    def add_task(self,args,nick):
+        """ Add individual tasks """
+        self.fm.add_file(args,self.tasks_dir,nick)
 
-def signal_handler(sig,frame):
-    print("Caught termination signal, cleaning up and exiting...")
-    ircc.disconnect(server,port)
-    print("Shut down successfully")
-    exit(0)
+    def add_all(self,args):
+        self.fm.add_file(args,self.tasks_global_dir)
 
-signal.signal(signal.SIGINT, signal_handler)
+    def list_tasks(self,channel,args,nick):
+        """ List individual tasks """
+        if len(args) > 0:
+            nick = args.split(' ')[0]
+        files = self.fm.list_files(self.tasks_dir,nick)
+        i = 1
+        for file in files:
+            content = self.fm.read_file(file,self.tasks_dir,nick)
+            if content:
+                self.irc.send(channel,f"{i}. {content}")
+            i+=1
 
+    def list_tasks_all(self,channel):
+        """ List Global Tasks """
+        file_list = self.fm.list_files(self.tasks_global_dir)
+        i=1
+        for file in file_list:
+            content = self.fm.read_file(file,self.tasks_global_dir) 
+            if content:
+                self.irc.send(channel,f"{i}. {content}")
+            i+=1
+                    
 
-def help_msg(channel):
-    ircc.send(channel,"https://raw.githubusercontent.com/33ether/taskbot/refs/heads/main/README.md")
+    def del_task(self,num,nick):
+        """ Delete individual tasks """
+        files = self.fm.list_files(self.tasks_dir,nick)
+        if num-1 < len(files) and num > 0 and len(files) > 0:
+            self.fm.del_file(files[num-1],self.tasks_dir,nick)
 
-def add_task(args,nick):  ##Add individual task
-    fm.add_file(args,tasks_dir,nick)
+    def del_all(self,num):
+        """ Delete global tasks """
+        file_list = self.fm.list_files(self.tasks_global_dir)
+        if num-1 < len(file_list) and num > 0 and len(file_list) > 0:
+            self.fm.del_file(file_list[num-1],self.tasks_global_dir)
 
-def add_all(args):    ##Add Global task
-    fm.add_file(args,tasks_global_dir)
+    def show_levels(self,channel): 
+        """ list the levels """
+        i=1
+        for level in self.levels:
+            self.irc.send(channel,f"{i}. {level}")
+            i+=1
 
-def list_tasks(channel,args,nick):  ##List individual task by nick
-    if len(args) > 0:
-        nick = args.split(' ')[0]
-    files = fm.list_files(tasks_dir,nick)
-    i = 1
-    for file in files:
-        content = fm.read_file(file,tasks_dir,nick)
-        if content:
-            ircc.send(channel,f"{i}. {content}")
-        i+=1
+    def show_roles(self,channel):
+        """ List the roles """
+        i=1
+        for role in self.roles:
+            self.irc.send(channel,f"{i}. {role}")
+            i+=1
 
-def list_tasks_all(channel): ##List Global tasks
-    file_list = fm.list_files(tasks_global_dir)
-    i=1
-    for file in file_list:
-        content = fm.read_file(file,tasks_global_dir) 
-        if content:
-            ircc.send(channel,f"{i}. {content}")
-        i+=1
-                
+    def register(self,nick,args):
+        """ Register a nick with level number,role number and optional info """
+        level_num = int(args.split(' ')[0])
+        role_num = int(args.split(' ')[1])
+        info = ""
+        if len(args.split(' ')) > 2:
+            info = ' '.join(args.split(' ')[2:]).strip()
+        if level_num > 0 and level_num <= len(self.levels) and role_num > 0 and role_num <= len(self.roles):
+            self.fm.add_file(f"[Level: {self.levels[level_num-1]}] [Role: {self.roles[role_num-1]}] [{info}]",self.info_dir,nick)
 
-def del_task(num,nick):  ##Delete an individual task by number
-    files = fm.list_files(tasks_dir,nick)
-    if num-1 < len(files) and num > 0 and len(files) > 0:
-        fm.del_file(files[num-1],tasks_dir,nick)
+    def info(self,args,channel,nick):
+        """ Show registered info of a nick """
+        if len(args) > 0:
+            nick = args.split(' ')[0]
+        nick_files = self.fm.list_files(self.info_dir,nick)
+        i=1
+        for file in nick_files:
+            content = self.fm.read_file(file,self.info_dir,nick)
+            if content:
+                self.irc.send(channel,f"{i}. [Nick: {nick}] {content}")
+            i+=1
 
-def del_all(num):   ##Delete global tasks
-    file_list = fm.list_files(tasks_global_dir)
-    if num-1 < len(file_list) and num > 0 and len(file_list) > 0:
-        fm.del_file(file_list[num-1],tasks_global_dir)
+    def del_info(self,nick,num):
+        """ Delete info if registered """
+        files = self.fm.list_files(self.info_dir,nick)
+        if num-1 < len(files) and num > 0 and len(files) > 0:
+            self.fm.del_file(files[num-1],self.info_dir,nick)
 
-def show_levels(channel): 
-    i=1
-    for level in levels:
-        ircc.send(channel,f"{i}. {level}")
-        i+=1
+    def match(self,channel,args,nick): 
+        """ Match peers based on level and role number supplied as arguments -l <num1> and -r <num2> """
+        # Regex to match arguments <num1> and <num2> by groups
+        regex = r'(?:-l\s+(\d+))?(?:\s*-r\s+(\d+))?$'
+        regex_match = re.match(regex,args)
+        level,role = (None,None)
+        nick_set = set()
+        if regex_match:
+            if (regex_match.group(1)):
+                level = int(regex_match.group(1)) - 1
+                level = level if 0 <= level < len(self.levels) else None
+            if (regex_match.group(2)):
+                role = int(regex_match.group(2)) - 1
+                role = role if 0 <= role < len(self.roles) else None
+                    
+        # Regex to match the level and role in each nick files inside info_dir
+        regex2 = r'\[Level:\s+([a-zA-Z]+)\]\s+\[Role:\s+([a-zA-Z]+)\].*$'
 
-def show_roles(channel):
-    i=1
-    for role in roles:
-        ircc.send(channel,f"{i}. {role}")
-        i+=1
+        if level is not None or role is not None:
+            info_folder_list = self.fm.list_files(self.info_dir)
+            for nick_folder in info_folder_list:
+                nick_folder_files = self.fm.list_files(self.info_dir,nick_folder)
+                for file in nick_folder_files:
+                    content = self.fm.read_file(file,self.info_dir,nick_folder)
+                    if content:
+                       regex2_match = re.match(regex2,content)
+                       read_level = regex2_match.group(1)
+                       read_role = regex2_match.group(2)
+                       if level is not None and role is not None:
+                           if self.levels[level] == read_level and self.roles[role] == read_role:
+                               nick_set.add(nick_folder)
+                       elif level is not None:
+                           if self.levels[level] == read_level:
+                               nick_set.add(nick_folder)
+                       elif role is not None:
+                           if self.roles[role] == read_role:
+                               nick_set.add(nick_folder)
 
-def register(nick,args):    ##register info by an individual on their own about levels, roles and others
-    level_num = int(args.split(' ')[0])
-    role_num = int(args.split(' ')[1])
-    info = ""
-    if len(args.split(' ')) > 2:
-        info = ' '.join(args.split(' ')[2:]).strip()
-        #print(info)
-    if level_num > 0 and level_num <= len(levels) and role_num > 0 and role_num <= len(roles):
-        fm.add_file(f"[Level: {levels[level_num-1]}] [Role: {roles[role_num-1]}] [{info}]",info_dir,nick)
-
-def info(args,channel,nick):  ##show registered info of a nick or own
-    if len(args) > 0:
-        nick = args.split(' ')[0]
-    nick_files = fm.list_files(info_dir,nick)
-    i=1
-    for file in nick_files:
-        content = fm.read_file(file,info_dir,nick)
-        if content:
-            ircc.send(channel,f"{i}. [Nick: {nick}] {content}")
-        i+=1
-
-def del_info(nick,num):  ## Delete registered info by an individual on their own by info number
-    files = fm.list_files(info_dir,nick)
-    if num-1 < len(files) and num > 0 and len(files) > 0:
-        fm.del_file(files[num-1],info_dir,nick)
-
-def match(nick,args):  ## Match peers based on level and role number supplied as arguments -l <num1> and -r <num2>
-    regex = r'(?:-l\s+(\d+))?(?:\s*-r\s+(\d+))?$'    ## match the arguments <num1> and <num2> by groups
-    regex_match = re.match(regex,args)
-    level,role = (None,None)
-    nick_set = set()
-    if regex_match:
-        if (regex_match.group(1)):
-            level = int(regex_match.group(1)) - 1
-            level = level if 0 <= level < len(levels) else None
-        if (regex_match.group(2)):
-            role = int(regex_match.group(2)) - 1
-            role = role if 0 <= role < len(roles) else None
-                
-    regex2 = r'\[Level:\s+([a-zA-Z]+)\]\s+\[Role:\s+([a-zA-Z]+)\].*$'  ##Match the level and role by groups in each nick file inside info_dir
-    if level is not None or role is not None:
-        info_folder_list = fm.list_files(info_dir)
-        for nick_folder in info_folder_list:
-            nick_folder_files = fm.list_files(info_dir,nick_folder)
-            for file in nick_folder_files:
-                content = fm.read_file(file,info_dir,nick_folder)
-                if content:
-                   regex2_match = re.match(regex2,content)
-                   read_level = regex2_match.group(1)
-                   read_role = regex2_match.group(2)
-                   if level is not None and role is not None:
-                       if levels[level] == read_level and roles[role] == read_role:
-                           nick_set.add(nick_folder)
-                   elif level is not None:
-                       if levels[level] == read_level:
-                           nick_set.add(nick_folder)
-                   elif role is not None:
-                       if roles[role] == read_role:
-                           nick_set.add(nick_folder)
-
-    if len(nick_set):
-        ircc.send(channel,' '.join(nick_set))
-
-
-def peers(channel):   ## show the peers in tasks and info_dir(registered)
-    registered_peer_set = set()
-    registered_peers = fm.list_files(info_dir)
-    for peer in registered_peers:
-        registered_peer_set.add(peer)
-    task_peer_set = set()
-    tasks_peer_list = fm.list_files(tasks_dir)
-    for peer in tasks_peer_list:
-        task_peer_set.add(peer)
-    
-    if len(registered_peer_set) or len(task_peer_set):
-        ircc.send(channel,f'{' '.join(registered_peer_set | task_peer_set)}')
-    if len(task_peer_set):
-        ircc.send(channel,f"With Tasks [{' '.join(task_peer_set)}]")
-    if len(registered_peer_set):
-        ircc.send(channel,f"Registered [{' '.join(registered_peer_set)}]")
+        if len(nick_set):
+            self.irc.send(channel,' '.join(nick_set))
 
 
-    
-## List the tasks at UTC 00:10 in the channels in channels
-def poast_task_to_channels():
-    target_hour = 0
-    target_minute = 10
-    poasted = False
-    while True:
-        now = datetime.now(timezone.utc)
-        if now.hour == target_hour and now.minute == target_minute:
-            if not poasted:
-                for channel in channels:
-                    ircc.send(channel,"Global tasks for all this week:")
-                    list_tasks_all(channel)
-                    poasted = True
-        else:
-            poasted = False
-        time.sleep(1)
+    def peers(self,channel):
+        """ Show the peers """
+        registered_peer_set = set()
+        registered_peers = self.fm.list_files(self.info_dir)
+        for peer in registered_peers:
+            registered_peer_set.add(peer)
+        task_peer_set = set()
+        tasks_peer_list = self.fm.list_files(self.tasks_dir)
+        for peer in tasks_peer_list:
+            task_peer_set.add(peer)
+        
+        if len(registered_peer_set) or len(task_peer_set):
+            self.irc.send(channel,f'{' '.join(registered_peer_set | task_peer_set)}')
+        if len(task_peer_set):
+            self.irc.send(channel,f"With Tasks [{' '.join(task_peer_set)}]")
+        if len(registered_peer_set):
+            self.irc.send(channel,f"Registered [{' '.join(registered_peer_set)}]")
 
-poast_task_thread = threading.Thread(target=poast_task_to_channels)
-poast_task_thread.start()
 
-while True:
-    
-    response = ircc.get_response()
-    if response is not None:
-        text = response.strip()
-        text_list = text.split(' ')
-        if len(text_list) > 3:
-            nick = text_list[0]
-            nick = nick[1:].strip()
-            nick = nick[:-14]
-            #print(nick)
-            channel = text_list[2]
-            if channel in channels:
-                msg = ' '.join(text_list[3:])
-                msg = msg[1:].strip()
-                msg = msg.split(' ')
-                
-                command = msg[0]
-                args = ' '.join(msg[1:]).strip()
+        
+    def poast_task_to_channels(self,hour,minute):
+        """ Post global tasks in channel in channels at target hour and target minute """
+        target_hour = hour
+        target_minute = minute
+        poasted = { channel: False for channel in self.irc.channels }
+        while True:
+            now = datetime.now(timezone.utc)
+            if now.hour == target_hour and now.minute == target_minute:
+                for channel in self.irc.channels:
+                    if not poasted[channel]:
+                        self.irc.send(channel,"Global tasks for all this week:")
+                        self.list_tasks_all(channel)
+                        poasted[channel] = True
+            else:
+                poasted = { channel: False for channel in poasted }
+            time.sleep(1)
 
-                if command.lower() == "!help" and len(args) == 0:
-                    help_msg(channel)
-                elif command.lower() == "!add_all" and len(args) >0:
-                    add_all(args)
-                elif command.lower() == "!tasks_all":
-                    list_tasks_all(channel)
-                elif command.lower() == "!del_all" and len(args) >0 and args.isdigit():
-                    del_all(int(args))
-                elif command.lower() == "!add" and len(args) > 0:
-                    add_task(args,nick)
-                elif command.lower() == "!tasks":
-                    list_tasks(channel,args,nick) 
-                elif command.lower() == "!del" and len(args) > 0 and args.isdigit():
-                    del_task(int(args),nick)
-                elif command.lower() == "!levels" and len(args) == 0:
-                    show_levels(channel)
-                elif command.lower() == "!roles" and len(args) == 0:
-                    show_roles(channel)
-                elif command.lower() == "!register" and len(args.split(' ')) >= 2 and args.split(' ')[0].isdigit() and args.split(' ')[1].isdigit():
-                    register(nick,args)
-                elif command.lower() == "!info":
-                    info(args,channel,nick)
-                elif command.lower() == "!del_info" and len(args) > 0 and args.isdigit():
-                    del_info(nick,int(args))
-                elif command.lower() == "!match":
-                    match(nick,args)
-                elif command.lower() == "!peers":
-                    peers(channel)
-                else:
-                    pass
-
-                

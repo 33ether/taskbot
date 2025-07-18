@@ -4,7 +4,7 @@ Taskbot is a bot designed to manage tasks and facilitate collaboration among use
 
 ## Configuration
 
-To use Taskbot, ensure the server address and port in `taskbot.py` are correctly set. Modify these values if you are not using the default settings
+Modify taskbot_cfg.py to your liking.
 
 ## Usage
 

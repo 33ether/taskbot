@@ -6,12 +6,16 @@ class IRC:
     def __init__(self):
         # Define the socket
         self.irc = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.channels = []
  
     def send(self, channel, msg):
         # Transfer data
         self.irc.send(bytes("PRIVMSG " + channel + " :" + msg + "\n", "UTF-8"))
  
     def connect(self, server, port, channels, botnick):
+        
+        self.channels = channels
+
         # Connect to the server
         print("Connecting to: " + server)
         self.irc.connect((server, port))
