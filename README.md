@@ -2,16 +2,24 @@
 
 https://github.com/33ether/taskbot
 
-Taskbot is a bot designed to manage tasks and facilitate collaboration among users in the #hackers channel on darkirc. This README provides instructions for configuring and using the bot.
+Taskbot is a bot designed to manage tasks and facilitate collaboration among users in the #hackers channel on darkirc. This README.md provides instructions for configuring and using the bot.
 
 ## Configuration
 
-Modify taskbot_cfg.py to your liking.
+```shell
+$ git clone https://github.com/33ether/taskbot
+$ cd taskbot
+```
+Modify `taskbot_cfg.py` to your liking.
 
 ## Running
 
-Make sure that darkirc daemon is running at the correct `server` address and `port` specified in taskbot_cfg.py
+Make sure that darkirc daemon is running at the correct `server` address and `port` specified in `taskbot_cfg.py`
 The run `bot.py`
+ 
+```shell
+$ python bot.py
+```
 
 ## Usage
 
