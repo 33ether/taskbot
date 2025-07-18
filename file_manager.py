@@ -12,7 +12,7 @@ class FileManager:
         if not os.path.exists(path):
             os.mkdir(path)
 
-    #dirs is a tuple containg the path in terms of subdirs like path1/path2 will be in path1,path2
+    #dirs is a tuple containg the path for example subdir1/subdir2 is the path then add_file(content,subdir1,subdir2)
     def add_file(self,content,*dirs):
         """Add file to a dirs"""
         path = self.base_dir
