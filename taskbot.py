@@ -15,7 +15,7 @@ info_dir = 'registers' ##nick info are stored here inside respective nick named 
 
 server = "127.0.0.1"
 port = 6667
-channels = ["#hackers"]
+channels = ["#hackers333"]
 nick = "bot"
 ircc = irc.IRC()
 
@@ -114,7 +114,7 @@ def del_info(nick,num):  ## Delete registered info by an individual on their own
 def match(nick,args):  ## Match peers based on level and role number supplied as arguments -l <num1> and -r <num2>
     regex = r'(?:-l\s+(\d+))?(?:\s*-r\s+(\d+))?$'    ## match the arguments <num1> and <num2> by groups
     regex_match = re.match(regex,args)
-
+    level,role = (None,None)
     nick_set = set()
     if regex_match:
         if (regex_match.group(1)):
