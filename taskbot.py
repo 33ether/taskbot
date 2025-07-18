@@ -171,10 +171,13 @@ def peers(channel):
     tasks_peer_list = fm.list_files(tasks_dir)
     for peer in tasks_peer_list:
         task_peer_set.add(peer)
-
-    ircc.send(channel,f'{' '.join(registered_peer_set | task_peer_set)}')
-    ircc.send(channel,f"With Tasks [{' '.join(task_peer_set)}]")
-    ircc.send(channel,f"Registered [{' '.join(registered_peer_set)}]")
+    
+    if len(registered_peer_set) or len(task_peer_set):
+        ircc.send(channel,f'{' '.join(registered_peer_set | task_peer_set)}')
+    if len(task_peer_set):
+        ircc.send(channel,f"With Tasks [{' '.join(task_peer_set)}]")
+    if len(registered_peer_set):
+        ircc.send(channel,f"Registered [{' '.join(registered_peer_set)}]")
 
 
     
