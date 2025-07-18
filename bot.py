@@ -38,9 +38,10 @@ def signal_handler(sig,frame):
 
 signal.signal(signal.SIGINT, signal_handler)
 
-# Make a separate thread for posting to channles at UTC Hour 0,Minute 10 passed as arguments to poast_task_to_channels method from TaskBot
-poast_task_thread = threading.Thread(target=tb.poast_task_to_channels,args=(0,10))
-poast_task_thread.start()
+if len(config['posting_time']):
+    # Make a separate thread for posting global tasks periodically
+    poast_task_thread = threading.Thread(target=tb.poast_task_to_channels,args=config['posting_time'])
+    poast_task_thread.start()
 
 
 while True:

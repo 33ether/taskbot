@@ -29,4 +29,6 @@ config = {
         # directory for registered info
         "info_dir" : "registers",
 
+        # (Hour,Minute) in UTC at which to post Global tasks periodically. If empty () then no posting
+        "posting_time" : (0,10),
         }
