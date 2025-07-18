@@ -111,58 +111,45 @@ def del_info(nick,num):  ## Delete registered info by an individual on their own
     if num-1 < len(files) and num > 0 and len(files) > 0:
         fm.del_file(files[num-1],info_dir,nick)
 
-def match(nick,args):  ## Match peers based on level and role number supplied as arguments -l <num> and -r <num>
-    regex = r'(?:-l\s+(\d+))?(?:\s*-r\s+(\d+))?$'  
+def match(nick,args):  ## Match peers based on level and role number supplied as arguments -l <num1> and -r <num2>
+    regex = r'(?:-l\s+(\d+))?(?:\s*-r\s+(\d+))?$'    ## match the arguments <num1> and <num2> by groups
     regex_match = re.match(regex,args)
-    regex2 = r'\[Level:\s+([a-zA-Z]+)\]\s+\[Role:\s+([a-zA-Z]+)\].*$'
 
     nick_set = set()
     if regex_match:
-        #print(regex_match.group(1),regex_match.group(2))
         if (regex_match.group(1)):
-            level = int(regex_match.group(1))
-            #print(level)
-            if level <= len(levels) and level > 0:
-                level-=1
-            else:
-                level = None
-        else:
-            level = None
+            level = int(regex_match.group(1)) - 1
+            level = level if 0 <= level < len(levels) else None
         if (regex_match.group(2)):
-            role = int(regex_match.group(2))
-            #print(role)
-            if role <= len(roles) and role > 0:
-                role-=1
-            else:
-                role = None
-        else:
-            role = None
-        #print(level,role)
-        
-        if level!=None or role!=None:
-            info_folder_list = fm.list_files(info_dir)
-            for nick_folder in info_folder_list:
-                nick_folder_files = fm.list_files(info_dir,nick_folder)
-                for file in nick_folder_files:
-                    content = fm.read_file(file,info_dir,nick_folder)
-                    if content:
-                       regex2_match = re.match(regex2,content)
-                       read_level = regex2_match.group(1)
-                       read_role = regex2_match.group(2)
-                       if level!=None and role!=None:
-                           if levels[level] == read_level and roles[role] == read_role:
-                               nick_set.add(nick_folder)
-                       elif level!=None:
-                           if levels[level] == read_level:
-                               nick_set.add(nick_folder)
-                       elif role!=None:
-                           if roles[role] == read_role:
-                               nick_set.add(nick_folder)
+            role = int(regex_match.group(2)) - 1
+            role = role if 0 <= role < len(roles) else None
+                
+    regex2 = r'\[Level:\s+([a-zA-Z]+)\]\s+\[Role:\s+([a-zA-Z]+)\].*$'  ##Match the level and role by groups in each nick file inside info_dir
+    if level is not None or role is not None:
+        info_folder_list = fm.list_files(info_dir)
+        for nick_folder in info_folder_list:
+            nick_folder_files = fm.list_files(info_dir,nick_folder)
+            for file in nick_folder_files:
+                content = fm.read_file(file,info_dir,nick_folder)
+                if content:
+                   regex2_match = re.match(regex2,content)
+                   read_level = regex2_match.group(1)
+                   read_role = regex2_match.group(2)
+                   if level is not None and role is not None:
+                       if levels[level] == read_level and roles[role] == read_role:
+                           nick_set.add(nick_folder)
+                   elif level is not None:
+                       if levels[level] == read_level:
+                           nick_set.add(nick_folder)
+                   elif role is not None:
+                       if roles[role] == read_role:
+                           nick_set.add(nick_folder)
 
-            #print(nick_set)            
-            ircc.send(channel,' '.join(nick_set))
+    if len(nick_set):
+        ircc.send(channel,' '.join(nick_set))
 
-def peers(channel):
+
+def peers(channel):   ## show the peers in tasks and info_dir(registered)
     registered_peer_set = set()
     registered_peers = fm.list_files(info_dir)
     for peer in registered_peers:
