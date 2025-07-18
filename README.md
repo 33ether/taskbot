@@ -1,6 +1,7 @@
 # Taskbot for #hackers in darkirc
 
-[Link https://github.com/33ether/taskbot] https://github.com/33ether/taskbot
+https://github.com/33ether/taskbot
+
 Taskbot is a bot designed to manage tasks and facilitate collaboration among users in the #hackers channel on darkirc. This README provides instructions for configuring and using the bot.
 
 ## Configuration
