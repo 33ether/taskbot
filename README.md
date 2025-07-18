@@ -6,6 +6,11 @@ Taskbot is a bot designed to manage tasks and facilitate collaboration among use
 
 Modify taskbot_cfg.py to your liking.
 
+## Running
+
+Make sure that darkirc daemon is running at the correct `server` address and `port` specified in taskbot_cfg.py
+The run `bot.py`
+
 ## Usage
 
 Taskbot supports commands for managing individual tasks, global tasks, user levels, roles, and peer matching. All commands are prefixed with `!`.

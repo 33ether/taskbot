@@ -13,9 +13,6 @@ class IRC:
         self.irc.send(bytes("PRIVMSG " + channel + " :" + msg + "\n", "UTF-8"))
  
     def connect(self, server, port, channels, botnick):
-        
-        self.channels = channels
-
         # Connect to the server
         print("Connecting to: " + server)
         self.irc.connect((server, port))
@@ -30,6 +27,9 @@ class IRC:
         # join the channel
         for chan in channels:
             self.irc.send(bytes("JOIN " + chan + "\n", "UTF-8"))
+
+        # Store the channels joined in channels atribute
+        self.channels = channels
 
     def disconnect(self, server, port):
         # Disonnect from the server and gracefully shutdown and close socket
