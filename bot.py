@@ -38,11 +38,13 @@ def signal_handler(sig,frame):
 
 signal.signal(signal.SIGINT, signal_handler)
 
-# Make a separate thread for posting to channles at UTC Hour,Minute passed as arguments to poast_task_to_channels method from TaskBot
-poast_task_thread = threading.Thread(target=tb.poast_task_to_channels,args=(6,24))
+# Make a separate thread for posting to channles at UTC Hour 0,Minute 10 passed as arguments to poast_task_to_channels method from TaskBot
+poast_task_thread = threading.Thread(target=tb.poast_task_to_channels,args=(0,10))
 poast_task_thread.start()
 
+
 while True:
+    #irc response processing starts
     response = ircc.get_response()
     if response is not None:
         text = response.strip()
@@ -59,6 +61,7 @@ while True:
                 
                 command = msg[0]
                 args = ' '.join(msg[1:]).strip()
+        #irc response processing ends
 
                 if command.lower() == "!help" and len(args) == 0:
                     tb.help_msg(channel)
