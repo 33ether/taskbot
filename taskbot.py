@@ -16,9 +16,6 @@ class TaskBot:
         self.roles = roles
 
         self.fm = file_manager.FileManager(parent_dir)
-        self.fm.ensure_dir(tasks_dir)
-        self.fm.ensure_dir(tasks_global_dir)
-        self.fm.ensure_dir(info_dir)
 
 
     def help_msg(self,channel):
