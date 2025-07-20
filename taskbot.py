@@ -16,6 +16,10 @@ class TaskBot:
         self.roles = roles
 
         self.fm = file_manager.FileManager(parent_dir)
+        self.fm.ensure_dir(tasks_dir)
+        self.fm.ensure_dir(tasks_global_dir)
+        self.fm.ensure_dir(info_dir)
+
 
     def help_msg(self,channel):
         """ help message for usage """
@@ -175,11 +179,13 @@ class TaskBot:
         while True:
             now = datetime.now(timezone.utc)
             if now.hour == target_hour and now.minute == target_minute:
-                for channel in self.irc.channels:
-                    if not poasted[channel]:
-                        self.irc.send(channel,"Global tasks for all this week:")
-                        self.list_tasks_all(channel)
-                        poasted[channel] = True
+                file_list = self.fm.list_files(self.tasks_global_dir)
+                if len(file_list):
+                    for channel in self.irc.channels:
+                        if not poasted[channel]:
+                            self.irc.send(channel,"Global tasks for all this week:")
+                            self.list_tasks_all(channel)
+                            poasted[channel] = True
             else:
                 poasted = { channel: False for channel in poasted }
             time.sleep(1)
